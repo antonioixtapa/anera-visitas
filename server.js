@@ -291,14 +291,17 @@ app.get('/api/export-excel', async (req, res) => {
 // ─── Start ────────────────────────────────────────────────────────────────────
 
 async function start() {
+  const dbUrl = process.env.DATABASE_URL;
+  console.log('DATABASE_URL (primeros 20 chars):', dbUrl ? dbUrl.substring(0, 20) : 'NO DEFINIDA');
+
   try {
     await initDB();
     await importFromExcel();
     app.listen(PORT, () => {
       console.log(`\n✅  ANERA Visitas corriendo en http://localhost:${PORT}\n`);
     });
-  } catch (e) {
-    console.error('❌  Error al iniciar:', e.message);
+  } catch (err) {
+    console.error('❌  Error al iniciar:', err);
     process.exit(1);
   }
 }
