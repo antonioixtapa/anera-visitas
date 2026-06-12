@@ -202,11 +202,9 @@
               <th>Teléfono</th>
               <th>Ciudad</th>
               <th>Fecha</th>
-              <th>Hora</th>
               <th>Interés</th>
               <th>Estatus</th>
               <th>Contactado por</th>
-              <th>Seguimiento</th>
               <th>Notas</th>
               <th></th>
             </tr>
@@ -302,6 +300,17 @@
           <button type="submit" class="btn btn-primary">Guardar Cambios</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- ── MODAL NOTAS ─────────────────────────────────────────── -->
+  <div id="modal-nota-overlay" class="modal-overlay" onclick="cerrarModalNota(event)">
+    <div class="modal modal-nota">
+      <div class="modal-header">
+        <h2>Notas</h2>
+        <button class="modal-close" onclick="cerrarModalNota()">&times;</button>
+      </div>
+      <div id="modal-nota-texto" class="nota-contenido"></div>
     </div>
   </div>
 

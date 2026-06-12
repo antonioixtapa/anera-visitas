@@ -95,18 +95,10 @@ function renderTablaRegistros(data) {
       <td>${esc(v.telefono)}</td>
       <td>${esc(v.ciudad || '—')}</td>
       <td>${esc(v.fechaVisita)}</td>
-      <td>${esc(v.hora)}</td>
       <td>${esc(v.interes)}</td>
       <td>${badgeNivel(v.nivelInteres)}</td>
       <td>${esc(v.contactadoPor || '—')}</td>
-      <td>
-        <select class="status-select" data-id="${v.id}" onchange="cambiarEstatus(this)">
-          ${['Pendiente','Confirmada','Realizada','Cancelada','Sin éxito'].map(s =>
-            `<option value="${s}" ${v.estatus === s ? 'selected' : ''}>${s}</option>`
-          ).join('')}
-        </select>
-      </td>
-      <td><span class="nota-text" title="${esc(v.notas)}">${esc(v.notas) || '—'}</span></td>
+      <td>${v.notas ? `<button class="btn-nota" onclick="verNota(${v.id})" title="Ver nota">📋</button>` : '<span class="sub-text">—</span>'}</td>
       <td><div class="acciones">
         <button class="btn-edit" onclick="abrirEditar(${v.id})" title="Editar">✎</button>
         <button class="btn-del"  onclick="eliminarVisita(${v.id})" title="Eliminar">✕</button>
@@ -218,6 +210,20 @@ document.getElementById('form-editar').addEventListener('submit', async e => {
     msg.textContent = '✗ ' + err.message;
   }
 });
+
+// ── Nota modal ────────────────────────────────────────────────────────────────
+
+function verNota(id) {
+  const v = allVisitas.find(x => Number(x.id) === Number(id));
+  if (!v) return;
+  document.getElementById('modal-nota-texto').textContent = v.notas || '';
+  document.getElementById('modal-nota-overlay').classList.add('open');
+}
+
+function cerrarModalNota(e) {
+  if (e && e.target !== document.getElementById('modal-nota-overlay')) return;
+  document.getElementById('modal-nota-overlay').classList.remove('open');
+}
 
 // ── Delete ────────────────────────────────────────────────────────────────────
 

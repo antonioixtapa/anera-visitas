@@ -418,15 +418,26 @@ textarea { resize: vertical; min-height: auto; }
 }
 
 /* ── Notes cell ───────────────────────────────────────────── */
-.nota-text {
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  display: block;
-  color: var(--muted);
-  font-style: italic;
-  font-size: 12px;
+.btn-nota {
+  background: #EFF6FF;
+  color: #1d4ed8;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background .15s;
+}
+.btn-nota:hover { background: #DBEAFE; }
+
+.modal-nota { max-width: 480px; }
+.nota-contenido {
+  padding: 16px 20px 20px;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 /* ── Modal ────────────────────────────────────────────────── */
