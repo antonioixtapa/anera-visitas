@@ -216,7 +216,8 @@ app.post('/api/visita', async (req, res) => {
     }
 
     const visito = req.body.visito === 'true' || req.body.visito === true;
-    const fechaRegistro = new Date().toLocaleString('sv-SE', { timeZone: 'America/Mexico_City' }).replace(' ', 'T');
+    const fechaRegistro = req.body.fechaRegistro ||
+      new Date().toLocaleString('sv-SE', { timeZone: 'America/Mexico_City' }).slice(0, 10);
     const { rows } = await pool.query(`
       INSERT INTO visitas
         (nombre,telefono,correo,ciudad,fechavisita,hora,interes,notas,
@@ -246,15 +247,18 @@ app.put('/api/visita/:id', async (req, res) => {
     }
 
     const visito = req.body.visito === 'true' || req.body.visito === true;
+    const fechaRegistro = req.body.fechaRegistro ||
+      new Date().toLocaleString('sv-SE', { timeZone: 'America/Mexico_City' }).slice(0, 10);
     const { rowCount } = await pool.query(`
       UPDATE visitas SET
         nombre=$1, telefono=$2, correo=$3, ciudad=$4, fechavisita=$5,
         hora=$6, interes=$7, notas=$8, estatus=$9,
-        contactadopor=$10, nivelinteres=$11, visito=$12, canalingreso=$13
-      WHERE id=$14
+        contactadopor=$10, nivelinteres=$11, visito=$12, canalingreso=$13,
+        fecharegistro=$14
+      WHERE id=$15
     `, [nombre, telefono, correo||'', ciudad||'', fechaVisita, hora,
         interes, notas||'', estatus, contactadoPor, nivelInteres||'', visito,
-        canalIngreso||'', req.params.id]);
+        canalIngreso||'', fechaRegistro, req.params.id]);
 
     if (rowCount === 0) return res.status(404).json({ error: 'Registro no encontrado' });
     res.json({ ok: true });

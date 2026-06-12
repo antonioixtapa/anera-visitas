@@ -11,9 +11,16 @@ document.querySelectorAll('.nav-link').forEach(link => {
     link.classList.add('active');
     document.getElementById('view-' + view).classList.add('active');
     if (view === 'dashboard' || view === 'registros') loadVisitas();
+    if (view === 'nueva') initFechaRegistro('nueva');
     cerrarSidebar();
   });
 });
+
+function initFechaRegistro(formId) {
+  const id  = formId === 'modal' ? 'input-fecha-registro-m' : 'input-fecha-registro';
+  const el  = document.getElementById(id);
+  if (el && !el.value) el.value = new Date().toISOString().slice(0, 10);
+}
 
 // ── Hamburger ─────────────────────────────────────────────────────────────────
 
@@ -197,6 +204,7 @@ document.getElementById('form-visita').addEventListener('submit', async e => {
 function resetForm() {
   document.getElementById('form-visita').reset();
   document.getElementById('form-msg').className = 'form-msg';
+  initFechaRegistro('nueva');
 }
 
 // ── Status change ─────────────────────────────────────────────────────────────
@@ -236,6 +244,8 @@ function abrirEditar(id) {
   f.estatus.value       = v.estatus       || 'Pendiente';
   f.notas.value         = v.notas         || '';
   f.visito.checked      = v.visito        || false;
+  const elFR = document.getElementById('input-fecha-registro-m');
+  if (elFR) elFR.value = v.fechaRegistro ? v.fechaRegistro.slice(0, 10) : new Date().toISOString().slice(0, 10);
   document.querySelectorAll('#form-editar [name="canalIngreso"]').forEach(r => {
     r.checked = r.value === (v.canalIngreso || '');
   });
@@ -244,6 +254,7 @@ function abrirEditar(id) {
   });
   document.getElementById('modal-msg').className = 'form-msg';
   document.getElementById('modal-overlay').classList.add('open');
+  initFechaRegistro('modal');
 }
 
 function cerrarModal(e) {
