@@ -74,7 +74,7 @@
           <thead>
             <tr>
               <th>#</th><th>Nombre</th>
-              <th>Fecha</th><th>Interés</th><th>Estatus</th><th>Tipo</th><th>Visitó propiedad</th><th>Notas</th><th></th>
+              <th>Fecha</th><th>Canal</th><th>Interés</th><th>Estatus</th><th>Tipo</th><th>Visitó propiedad</th><th>Notas</th><th></th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -149,6 +149,20 @@
             </div>
 
             <div class="field full">
+              <label>Canal de ingreso</label>
+              <div class="nivel-group">
+                <input type="radio" id="canal-walkin" name="canalIngreso" value="Walk in" />
+                <label for="canal-walkin" class="nivel-btn canal-walkin">Walk in</label>
+                <input type="radio" id="canal-huesped" name="canalIngreso" value="Huésped" />
+                <label for="canal-huesped" class="nivel-btn canal-huesped">Huésped</label>
+                <input type="radio" id="canal-redes" name="canalIngreso" value="Redes sociales" />
+                <label for="canal-redes" class="nivel-btn canal-redes">Redes sociales</label>
+                <input type="radio" id="canal-whatsapp" name="canalIngreso" value="WhatsApp" />
+                <label for="canal-whatsapp" class="nivel-btn canal-whatsapp">WhatsApp</label>
+              </div>
+            </div>
+
+            <div class="field full">
               <label>Tipo de visita <span class="req">*</span></label>
               <div class="nivel-group">
                 <input type="radio" id="tipo-prospecto" name="tipoVisita" value="Prospecto de compra" required />
@@ -218,6 +232,7 @@
               <th>Teléfono</th>
               <th class="sortable" data-col="ciudad">Ciudad</th>
               <th class="sortable" data-col="fechaVisita">Fecha</th>
+              <th>Canal</th>
               <th class="sortable" data-col="interes">Interés</th>
               <th class="sortable" data-col="estatus">Estatus</th>
               <th>Tipo</th>
@@ -295,6 +310,19 @@
               <option>Cancelada</option>
               <option>Sin éxito</option>
             </select>
+          </div>
+          <div class="field full">
+            <label>Canal de ingreso</label>
+            <div class="nivel-group">
+              <input type="radio" id="canal-walkin-m" name="canalIngreso" value="Walk in" />
+              <label for="canal-walkin-m" class="nivel-btn canal-walkin">Walk in</label>
+              <input type="radio" id="canal-huesped-m" name="canalIngreso" value="Huésped" />
+              <label for="canal-huesped-m" class="nivel-btn canal-huesped">Huésped</label>
+              <input type="radio" id="canal-redes-m" name="canalIngreso" value="Redes sociales" />
+              <label for="canal-redes-m" class="nivel-btn canal-redes">Redes sociales</label>
+              <input type="radio" id="canal-whatsapp-m" name="canalIngreso" value="WhatsApp" />
+              <label for="canal-whatsapp-m" class="nivel-btn canal-whatsapp">WhatsApp</label>
+            </div>
           </div>
           <div class="field full">
             <label>Tipo de visita <span class="req">*</span></label>

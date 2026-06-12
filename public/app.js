@@ -124,6 +124,7 @@ function renderDashboard(data) {
           <td>${v.id}</td>
           <td><strong>${esc(v.nombre)}</strong></td>
           <td>${esc(v.fechaVisita)}</td>
+          <td>${badgeCanal(v.canalIngreso)}</td>
           <td>${esc(v.interes)}</td>
           <td>${badgeNivel(v.nivelInteres)}</td>
           <td>${badgeTipo(v.tipoVisita)}</td>
@@ -159,6 +160,7 @@ function renderTablaRegistros(data) {
       <td>${esc(v.telefono)}</td>
       <td>${esc(v.ciudad || '—')}</td>
       <td>${esc(v.fechaVisita)}</td>
+      <td>${badgeCanal(v.canalIngreso)}</td>
       <td>${esc(v.interes)}</td>
       <td>${badgeNivel(v.nivelInteres)}</td>
       <td>${badgeTipo(v.tipoVisita)}</td>
@@ -245,6 +247,9 @@ function abrirEditar(id) {
   f.visito.checked      = v.visito        || false;
   document.querySelectorAll('#form-editar [name="tipoVisita"]').forEach(r => {
     r.checked = r.value === (v.tipoVisita || '');
+  });
+  document.querySelectorAll('#form-editar [name="canalIngreso"]').forEach(r => {
+    r.checked = r.value === (v.canalIngreso || '');
   });
   document.querySelectorAll('#form-editar [name="nivelInteres"]').forEach(r => {
     r.checked = r.value === (v.nivelInteres || '');
@@ -350,6 +355,17 @@ function exportExcel() {
 }
 
 // ── Badges ────────────────────────────────────────────────────────────────────
+
+function badgeCanal(canal) {
+  const map = {
+    'Walk in':       'badge-canal-walkin',
+    'Huésped':       'badge-canal-huesped',
+    'Redes sociales':'badge-canal-redes',
+    'WhatsApp':      'badge-canal-whatsapp',
+  };
+  if (!canal || !map[canal]) return '<span class="sub-text">—</span>';
+  return `<span class="badge ${map[canal]}">${esc(canal)}</span>`;
+}
 
 function badgeTipo(tipo) {
   if (!tipo) return '<span class="sub-text">—</span>';
