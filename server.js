@@ -180,7 +180,7 @@ app.put('/api/visita/:id', (req, res) => {
 app.put('/api/visita/:id/estatus', (req, res) => {
   try {
     const { estatus } = req.body;
-    const valid = ['Pendiente','Confirmada','Realizada','Cancelada'];
+    const valid = ['Pendiente','Confirmada','Realizada','Cancelada','Sin éxito'];
     if (!valid.includes(estatus)) return res.status(400).json({ error: 'Estatus inválido' });
 
     const { changes } = db.prepare('UPDATE visitas SET estatus=? WHERE id=?')

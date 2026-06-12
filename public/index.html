@@ -79,7 +79,7 @@
           <thead>
             <tr>
               <th>#</th><th>Nombre</th><th>Ciudad</th>
-              <th>Fecha</th><th>Interés</th><th>Nivel</th><th>Estatus</th><th></th>
+              <th>Fecha</th><th>Interés</th><th>Estatus</th><th>Seguimiento</th><th></th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -149,7 +149,7 @@
             </div>
 
             <div class="field full">
-              <label>Nivel de Interés <span class="req">*</span></label>
+              <label>Estatus <span class="req">*</span></label>
               <div class="nivel-group">
                 <input type="radio" id="niv-alto" name="nivelInteres" value="Alto interés" required />
                 <label for="niv-alto" class="nivel-btn nivel-alto">Alto interés</label>
@@ -201,9 +201,9 @@
               <th>Fecha</th>
               <th>Hora</th>
               <th>Interés</th>
-              <th>Nivel</th>
-              <th>Contactado por</th>
               <th>Estatus</th>
+              <th>Contactado por</th>
+              <th>Seguimiento</th>
               <th>Notas</th>
               <th></th>
             </tr>
@@ -274,6 +274,7 @@
               <option>Confirmada</option>
               <option>Realizada</option>
               <option>Cancelada</option>
+              <option>Sin éxito</option>
             </select>
           </div>
           <div class="field full">

@@ -101,7 +101,7 @@ function renderTablaRegistros(data) {
       <td>${esc(v.contactadoPor || '—')}</td>
       <td>
         <select class="status-select" data-id="${v.id}" onchange="cambiarEstatus(this)">
-          ${['Pendiente','Confirmada','Realizada','Cancelada'].map(s =>
+          ${['Pendiente','Confirmada','Realizada','Cancelada','Sin éxito'].map(s =>
             `<option value="${s}" ${v.estatus === s ? 'selected' : ''}>${s}</option>`
           ).join('')}
         </select>
@@ -268,6 +268,7 @@ function badge(estatus) {
     'Confirmada': 'badge-confirmada',
     'Realizada':  'badge-realizada',
     'Cancelada':  'badge-cancelada',
+    'Sin éxito':  'badge-sinexico',
   };
   return `<span class="badge ${map[estatus] || ''}">${esc(estatus)}</span>`;
 }

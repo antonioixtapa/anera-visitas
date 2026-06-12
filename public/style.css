@@ -254,6 +254,7 @@ tr:hover td { background: #f7f9fc; }
 .badge-confirmada { background: #DBEAFE; color: #1547a0; }
 .badge-realizada  { background: #DCFCE7; color: #166534; }
 .badge-cancelada  { background: #FEE2E2; color: #991b1b; }
+.badge-sinexico   { background: #374151; color: #f1f5f9; }
 
 /* Nivel de interés badges */
 .badge-nivel-alto { background: #DCFCE7; color: #166534; }
