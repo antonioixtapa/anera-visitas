@@ -10,9 +10,7 @@ const PORT = process.env.PORT || 3000;
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL && process.env.DATABASE_URL.includes('railway.internal')
-    ? false
-    : { rejectUnauthorized: false },
+  ssl: false,
 });
 
 const XLSX_PATH   = path.join(__dirname, 'ANERA-Visitas.xlsx');
