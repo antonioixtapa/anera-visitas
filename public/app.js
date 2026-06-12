@@ -280,6 +280,13 @@ function esc(str) {
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// ── Logout ───────────────────────────────────────────────────────────────────
+
+document.getElementById('btn-logout').addEventListener('click', async () => {
+  await fetch('/api/logout', { method: 'POST' });
+  window.location.href = '/login';
+});
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 loadVisitas();

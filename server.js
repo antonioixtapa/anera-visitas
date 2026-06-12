@@ -1,4 +1,5 @@
 const express  = require('express');
+const session  = require('express-session');
 const ExcelJS  = require('exceljs');
 const Database = require('better-sqlite3');
 const path     = require('path');
@@ -9,8 +10,62 @@ const PORT      = 3000;
 const DB_PATH   = path.join(__dirname, 'anera-visitas.db');
 const XLSX_PATH = path.join(__dirname, 'ANERA-Visitas.xlsx');
 
+const CREDENTIALS = { usuario: 'anera', password: 'playablanca2026' };
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+// ─── Sesión ───────────────────────────────────────────────────────────────────
+
+app.use(session({
+  secret: 'anera-playa-blanca-secret-2026',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { maxAge: 8 * 60 * 60 * 1000 }, // 8 horas
+}));
+
+// ─── Login / Logout ───────────────────────────────────────────────────────────
+
+app.get('/login', (req, res) => {
+  if (req.session.auth) return res.redirect('/');
+  res.sendFile(path.join(__dirname, 'public/login.html'));
+});
+
+app.post('/api/login', (req, res) => {
+  const { usuario, password } = req.body;
+  if (usuario === CREDENTIALS.usuario && password === CREDENTIALS.password) {
+    req.session.auth = true;
+    return res.json({ ok: true });
+  }
+  res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
+});
+
+app.post('/api/logout', (req, res) => {
+  req.session.destroy(() => res.json({ ok: true }));
+});
+
+// ─── Auth middleware ──────────────────────────────────────────────────────────
+
+app.use((req, res, next) => {
+  // Recursos estáticos siempre accesibles (CSS, JS, imágenes)
+  if (/\.(css|js|png|jpg|jpeg|ico|woff2?)$/.test(req.path)) return next();
+  // Rutas públicas
+  if (req.path === '/login' || req.path === '/api/login') return next();
+  // Verificar sesión
+  if (!req.session.auth) {
+    if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'No autenticado' });
+    return res.redirect('/login');
+  }
+  next();
+});
+
+// ─── Servir app principal ─────────────────────────────────────────────────────
+
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/index.html'));
+});
 
 // ─── SQLite setup ─────────────────────────────────────────────────────────────
 
@@ -47,32 +102,25 @@ async function importFromExcel() {
 
   const insert = db.prepare(`
     INSERT INTO visitas
-      (nombre, telefono, correo, ciudad, fechaVisita, hora, interes,
-       notas, estatus, contactadoPor, nivelInteres, fechaRegistro)
+      (nombre,telefono,correo,ciudad,fechaVisita,hora,interes,
+       notas,estatus,contactadoPor,nivelInteres,fechaRegistro)
     VALUES
       (@nombre,@telefono,@correo,@ciudad,@fechaVisita,@hora,@interes,
        @notas,@estatus,@contactadoPor,@nivelInteres,@fechaRegistro)
   `);
-
   const importAll = db.transaction(rows => { for (const r of rows) insert.run(r); });
 
   const rows = [];
   ws.eachRow((row, i) => {
     if (i === 1) return;
-    const v = row.values;
+    const v   = row.values;
     const str = x => (x == null ? '' : String(x instanceof Date ? x.toLocaleDateString('es-MX') : x));
     rows.push({
-      nombre:        str(v[2]),
-      telefono:      str(v[3]),
-      correo:        str(v[4]),
-      ciudad:        str(v[5]),
-      fechaVisita:   str(v[6]),
-      hora:          str(v[7]),
-      interes:       str(v[8]),
-      notas:         str(v[9]),
-      estatus:       str(v[10]) || 'Pendiente',
-      contactadoPor: str(v[11]),
-      nivelInteres:  str(v[12]),
+      nombre: str(v[2]), telefono: str(v[3]), correo: str(v[4]),
+      ciudad: str(v[5]), fechaVisita: str(v[6]), hora: str(v[7]),
+      interes: str(v[8]), notas: str(v[9]),
+      estatus: str(v[10]) || 'Pendiente',
+      contactadoPor: str(v[11]), nivelInteres: str(v[12]),
       fechaRegistro: str(v[13]),
     });
   });
@@ -95,9 +143,9 @@ const EXCEL_COLS = [
   { header: 'Hora',             key: 'hora',          width: 8  },
   { header: 'Interés de Compra',key: 'interes',       width: 20 },
   { header: 'Notas Internas',   key: 'notas',         width: 40 },
-  { header: 'Estatus',          key: 'estatus',       width: 14 },
+  { header: 'Seguimiento',      key: 'estatus',       width: 14 },
   { header: 'Contactado por',   key: 'contactadoPor', width: 16 },
-  { header: 'Nivel de Interés', key: 'nivelInteres',  width: 18 },
+  { header: 'Estatus',          key: 'nivelInteres',  width: 18 },
   { header: 'Fecha Registro',   key: 'fechaRegistro', width: 20 },
 ];
 
@@ -128,7 +176,7 @@ async function buildExcel(rows) {
   return wb;
 }
 
-// ─── Routes ───────────────────────────────────────────────────────────────────
+// ─── API Routes ───────────────────────────────────────────────────────────────
 
 app.get('/api/visitas', (req, res) => {
   try {

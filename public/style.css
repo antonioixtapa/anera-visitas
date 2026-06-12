@@ -132,6 +132,26 @@ nav { padding: 16px 12px; flex: 1; }
 .nav-link.active { background: var(--navy); color: #fff; }
 .nav-icon { font-size: 15px; }
 
+.btn-logout {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: calc(100% - 24px);
+  margin: 0 12px 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(0,0,0,.15);
+  color: rgba(255,255,255,.8);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  min-height: 44px;
+  font-family: inherit;
+}
+.btn-logout:hover { background: rgba(0,0,0,.28); color: #fff; }
+
 .sidebar-footer {
   padding: 16px 20px;
   font-size: 11px;

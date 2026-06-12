@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ANERA Playa Blanca — Acceso</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #1A3C5E;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 44px 40px 40px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 24px 64px rgba(0,0,0,.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+
+    .logo {
+      width: 180px;
+      height: auto;
+      margin-bottom: 8px;
+    }
+
+    .tagline {
+      font-size: 12px;
+      letter-spacing: .8px;
+      text-transform: uppercase;
+      color: #9E9880;
+      margin-bottom: 32px;
+    }
+
+    .form-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1A3C5E;
+      align-self: flex-start;
+      margin-bottom: 20px;
+    }
+
+    form { width: 100%; display: flex; flex-direction: column; gap: 14px; }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #1A3C5E;
+      letter-spacing: .2px;
+    }
+
+    input {
+      padding: 11px 14px;
+      border: 1.5px solid #dde3ec;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #1e2d3d;
+      transition: border-color .15s;
+      font-family: inherit;
+    }
+    input:focus {
+      outline: none;
+      border-color: #C49A3C;
+      box-shadow: 0 0 0 3px rgba(196,154,60,.12);
+    }
+
+    .btn {
+      margin-top: 6px;
+      padding: 12px;
+      background: #C49A3C;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s, box-shadow .15s;
+      min-height: 46px;
+    }
+    .btn:hover { background: #a87f2a; box-shadow: 0 4px 14px rgba(196,154,60,.4); }
+
+    .error-msg {
+      padding: 10px 14px;
+      background: #FEE2E2;
+      color: #991b1b;
+      border-radius: 8px;
+      font-size: 13px;
+      display: none;
+    }
+    .error-msg.visible { display: block; }
+
+    .footer {
+      margin-top: 28px;
+      font-size: 11px;
+      color: #9E9880;
+      letter-spacing: .4px;
+    }
+
+    @media (max-width: 420px) {
+      .card { padding: 32px 24px 28px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <img src="logo.png" alt="ANERA" class="logo" />
+    <div class="tagline">Playa Blanca · Ixtapa-Zihuatanejo</div>
+
+    <div class="form-title">Iniciar sesión</div>
+
+    <form id="login-form">
+      <div class="field">
+        <label for="usuario">Usuario</label>
+        <input type="text" id="usuario" name="usuario"
+               placeholder="Usuario" autocomplete="username" required />
+      </div>
+      <div class="field">
+        <label for="password">Contraseña</label>
+        <input type="password" id="password" name="password"
+               placeholder="Contraseña" autocomplete="current-password" required />
+      </div>
+      <div class="error-msg" id="error-msg">Usuario o contraseña incorrectos.</div>
+      <button type="submit" class="btn">Entrar</button>
+    </form>
+
+    <div class="footer">ANERA Visitas © 2026</div>
+  </div>
+
+  <script>
+    document.getElementById('login-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const err  = document.getElementById('error-msg');
+      const btn  = e.target.querySelector('button');
+      const data = {
+        usuario:  document.getElementById('usuario').value,
+        password: document.getElementById('password').value,
+      };
+
+      err.classList.remove('visible');
+      btn.textContent = 'Verificando…';
+      btn.disabled = true;
+
+      try {
+        const res  = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        });
+        if (res.ok) {
+          window.location.href = '/';
+        } else {
+          err.classList.add('visible');
+          btn.textContent = 'Entrar';
+          btn.disabled = false;
+          document.getElementById('password').value = '';
+          document.getElementById('password').focus();
+        }
+      } catch {
+        err.textContent = 'Error de conexión. Intenta de nuevo.';
+        err.classList.add('visible');
+        btn.textContent = 'Entrar';
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
