@@ -56,6 +56,23 @@
 
     .field { display: flex; flex-direction: column; gap: 6px; }
 
+    .input-wrap { position: relative; }
+    .input-wrap input { width: 100%; padding-right: 42px; }
+    .toggle-pw {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #9E9880;
+      font-size: 16px;
+      line-height: 1;
+      padding: 0;
+    }
+    .toggle-pw:hover { color: #1A3C5E; }
+
     label {
       font-size: 12px;
       font-weight: 600;
@@ -130,8 +147,11 @@
       </div>
       <div class="field">
         <label for="password">Contraseña</label>
-        <input type="password" id="password" name="password"
-               placeholder="Contraseña" autocomplete="current-password" required />
+        <div class="input-wrap">
+          <input type="password" id="password" name="password"
+                 placeholder="Contraseña" autocomplete="current-password" required />
+          <button type="button" class="toggle-pw" id="toggle-pw" tabindex="-1">👁</button>
+        </div>
       </div>
       <div class="error-msg" id="error-msg">Usuario o contraseña incorrectos.</div>
       <button type="submit" class="btn">Entrar</button>
@@ -141,6 +161,18 @@
   </div>
 
   <script>
+    document.getElementById('toggle-pw').addEventListener('click', () => {
+      const input = document.getElementById('password');
+      const btn   = document.getElementById('toggle-pw');
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '🙈';
+      } else {
+        input.type = 'password';
+        btn.textContent = '👁';
+      }
+    });
+
     document.getElementById('login-form').addEventListener('submit', async e => {
       e.preventDefault();
       const err  = document.getElementById('error-msg');
