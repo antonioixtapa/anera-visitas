@@ -3,3 +3,4 @@ anera-visitas.db
 ANERA-Visitas.xlsx
 *.db-shm
 *.db-wal
+.env

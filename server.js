@@ -1,98 +1,74 @@
 const express  = require('express');
 const session  = require('express-session');
 const ExcelJS  = require('exceljs');
-const Database = require('better-sqlite3');
+const { Pool } = require('pg');
 const path     = require('path');
 const fs       = require('fs');
 
-const app       = express();
-const PORT      = 3000;
-const DB_PATH   = path.join(__dirname, 'anera-visitas.db');
+const app  = express();
+const PORT = process.env.PORT || 3000;
+
+const DATABASE_URL =
+  process.env.DATABASE_URL ||
+  'postgresql://postgres:jprVrMIAPvWIBXsIAPvWIBXsIZLMzqizODgFnzink@postgres.railway.internal:5432/railway';
+
 const XLSX_PATH = path.join(__dirname, 'ANERA-Visitas.xlsx');
 
 const CREDENTIALS = { usuario: 'anera', password: 'playablanca2026' };
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+// ─── PostgreSQL pool ──────────────────────────────────────────────────────────
 
-// ─── Sesión ───────────────────────────────────────────────────────────────────
-
-app.use(session({
-  secret: 'anera-playa-blanca-secret-2026',
-  resave: false,
-  saveUninitialized: false,
-  cookie: { maxAge: 8 * 60 * 60 * 1000 }, // 8 horas
-}));
-
-// ─── Login / Logout ───────────────────────────────────────────────────────────
-
-app.get('/login', (req, res) => {
-  if (req.session.auth) return res.redirect('/');
-  res.sendFile(path.join(__dirname, 'public/login.html'));
+const pool = new Pool({
+  connectionString: DATABASE_URL,
+  ssl: DATABASE_URL.includes('railway.internal')
+    ? false
+    : { rejectUnauthorized: false },
 });
 
-app.post('/api/login', (req, res) => {
-  const { usuario, password } = req.body;
-  if (usuario === CREDENTIALS.usuario && password === CREDENTIALS.password) {
-    req.session.auth = true;
-    return res.json({ ok: true });
-  }
-  res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
+// ─── Row mapper (DB lowercase → JS camelCase) ─────────────────────────────────
+
+const mapRow = r => ({
+  id:            r.id,
+  nombre:        r.nombre,
+  telefono:      r.telefono,
+  correo:        r.correo,
+  ciudad:        r.ciudad,
+  fechaVisita:   r.fechavisita,
+  hora:          r.hora,
+  interes:       r.interes,
+  notas:         r.notas,
+  estatus:       r.estatus,
+  contactadoPor: r.contactadopor,
+  nivelInteres:  r.nivelinteres,
+  fechaRegistro: r.fecharegistro,
 });
 
-app.post('/api/logout', (req, res) => {
-  req.session.destroy(() => res.json({ ok: true }));
-});
+// ─── DB init ──────────────────────────────────────────────────────────────────
 
-// ─── Auth middleware ──────────────────────────────────────────────────────────
+async function initDB() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS visitas (
+      id            SERIAL PRIMARY KEY,
+      nombre        TEXT NOT NULL,
+      telefono      TEXT NOT NULL,
+      correo        TEXT DEFAULT '',
+      ciudad        TEXT DEFAULT '',
+      fechavisita   TEXT NOT NULL,
+      hora          TEXT NOT NULL,
+      interes       TEXT NOT NULL,
+      notas         TEXT DEFAULT '',
+      estatus       TEXT DEFAULT 'Pendiente',
+      contactadopor TEXT DEFAULT '',
+      nivelinteres  TEXT DEFAULT '',
+      fecharegistro TEXT DEFAULT ''
+    )
+  `);
+}
 
-app.use((req, res, next) => {
-  // Recursos estáticos siempre accesibles (CSS, JS, imágenes)
-  if (/\.(css|js|png|jpg|jpeg|ico|woff2?)$/.test(req.path)) return next();
-  // Rutas públicas
-  if (req.path === '/login' || req.path === '/api/login') return next();
-  // Verificar sesión
-  if (!req.session.auth) {
-    if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'No autenticado' });
-    return res.redirect('/login');
-  }
-  next();
-});
-
-// ─── Servir app principal ─────────────────────────────────────────────────────
-
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/index.html'));
-});
-
-// ─── SQLite setup ─────────────────────────────────────────────────────────────
-
-const db = new Database(DB_PATH);
-
-db.exec(`
-  CREATE TABLE IF NOT EXISTS visitas (
-    id            INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre        TEXT NOT NULL,
-    telefono      TEXT NOT NULL,
-    correo        TEXT DEFAULT '',
-    ciudad        TEXT DEFAULT '',
-    fechaVisita   TEXT NOT NULL,
-    hora          TEXT NOT NULL,
-    interes       TEXT NOT NULL,
-    notas         TEXT DEFAULT '',
-    estatus       TEXT DEFAULT 'Pendiente',
-    contactadoPor TEXT DEFAULT '',
-    nivelInteres  TEXT DEFAULT '',
-    fechaRegistro TEXT DEFAULT ''
-  )
-`);
-
-// ─── Import Excel → SQLite (solo si la BD está vacía) ─────────────────────────
+// ─── Import Excel → PostgreSQL (solo si la tabla está vacía) ─────────────────
 
 async function importFromExcel() {
-  const { n } = db.prepare('SELECT COUNT(*) AS n FROM visitas').get();
+  const { rows: [{ n }] } = await pool.query('SELECT COUNT(*)::int AS n FROM visitas');
   if (n > 0 || !fs.existsSync(XLSX_PATH)) return;
 
   const wb = new ExcelJS.Workbook();
@@ -100,34 +76,39 @@ async function importFromExcel() {
   const ws = wb.getWorksheet('Visitas');
   if (!ws) return;
 
-  const insert = db.prepare(`
-    INSERT INTO visitas
-      (nombre,telefono,correo,ciudad,fechaVisita,hora,interes,
-       notas,estatus,contactadoPor,nivelInteres,fechaRegistro)
-    VALUES
-      (@nombre,@telefono,@correo,@ciudad,@fechaVisita,@hora,@interes,
-       @notas,@estatus,@contactadoPor,@nivelInteres,@fechaRegistro)
-  `);
-  const importAll = db.transaction(rows => { for (const r of rows) insert.run(r); });
+  const str = x => (x == null ? '' : String(x instanceof Date ? x.toLocaleDateString('es-MX') : x));
 
-  const rows = [];
+  const records = [];
   ws.eachRow((row, i) => {
     if (i === 1) return;
-    const v   = row.values;
-    const str = x => (x == null ? '' : String(x instanceof Date ? x.toLocaleDateString('es-MX') : x));
-    rows.push({
-      nombre: str(v[2]), telefono: str(v[3]), correo: str(v[4]),
-      ciudad: str(v[5]), fechaVisita: str(v[6]), hora: str(v[7]),
-      interes: str(v[8]), notas: str(v[9]),
-      estatus: str(v[10]) || 'Pendiente',
-      contactadoPor: str(v[11]), nivelInteres: str(v[12]),
-      fechaRegistro: str(v[13]),
-    });
+    const v = row.values;
+    records.push([
+      str(v[2]), str(v[3]), str(v[4]), str(v[5]),
+      str(v[6]), str(v[7]), str(v[8]), str(v[9]),
+      str(v[10]) || 'Pendiente', str(v[11]), str(v[12]), str(v[13]),
+    ]);
   });
 
-  if (rows.length) {
-    importAll(rows);
-    console.log(`📥  ${rows.length} registros importados desde Excel`);
+  if (!records.length) return;
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    for (const r of records) {
+      await client.query(`
+        INSERT INTO visitas
+          (nombre,telefono,correo,ciudad,fechavisita,hora,interes,notas,
+           estatus,contactadopor,nivelinteres,fecharegistro)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+      `, r);
+    }
+    await client.query('COMMIT');
+    console.log(`📥  ${records.length} registros importados desde Excel`);
+  } catch (e) {
+    await client.query('ROLLBACK');
+    console.error('Error importando Excel:', e.message);
+  } finally {
+    client.release();
   }
 }
 
@@ -176,15 +157,66 @@ async function buildExcel(rows) {
   return wb;
 }
 
+// ─── Express setup ────────────────────────────────────────────────────────────
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
+app.use(session({
+  secret: 'anera-playa-blanca-secret-2026',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { maxAge: 8 * 60 * 60 * 1000 },
+}));
+
+// ─── Login / Logout ───────────────────────────────────────────────────────────
+
+app.get('/login', (req, res) => {
+  if (req.session.auth) return res.redirect('/');
+  res.sendFile(path.join(__dirname, 'public/login.html'));
+});
+
+app.post('/api/login', (req, res) => {
+  const { usuario, password } = req.body;
+  if (usuario === CREDENTIALS.usuario && password === CREDENTIALS.password) {
+    req.session.auth = true;
+    return res.json({ ok: true });
+  }
+  res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
+});
+
+app.post('/api/logout', (req, res) => {
+  req.session.destroy(() => res.json({ ok: true }));
+});
+
+// ─── Auth middleware ──────────────────────────────────────────────────────────
+
+app.use((req, res, next) => {
+  if (/\.(css|js|png|jpg|jpeg|ico|woff2?)$/.test(req.path)) return next();
+  if (req.path === '/login' || req.path === '/api/login') return next();
+  if (!req.session.auth) {
+    if (req.path.startsWith('/api/')) return res.status(401).json({ error: 'No autenticado' });
+    return res.redirect('/login');
+  }
+  next();
+});
+
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/index.html'));
+});
+
 // ─── API Routes ───────────────────────────────────────────────────────────────
 
-app.get('/api/visitas', (req, res) => {
+app.get('/api/visitas', async (req, res) => {
   try {
-    res.json(db.prepare('SELECT * FROM visitas ORDER BY id ASC').all());
+    const { rows } = await pool.query('SELECT * FROM visitas ORDER BY id ASC');
+    res.json(rows.map(mapRow));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.post('/api/visita', (req, res) => {
+app.post('/api/visita', async (req, res) => {
   try {
     const { nombre, telefono, correo, ciudad, fechaVisita, hora,
             interes, notas, contactadoPor, nivelInteres } = req.body;
@@ -192,64 +224,69 @@ app.post('/api/visita', (req, res) => {
       return res.status(400).json({ error: 'Faltan campos obligatorios' });
 
     const fechaRegistro = new Date().toLocaleString('es-MX', { timeZone: 'America/Mexico_City' });
-    const { lastInsertRowid } = db.prepare(`
+    const { rows } = await pool.query(`
       INSERT INTO visitas
-        (nombre,telefono,correo,ciudad,fechaVisita,hora,interes,notas,
-         estatus,contactadoPor,nivelInteres,fechaRegistro)
-      VALUES (?,?,?,?,?,?,?,?,'Pendiente',?,?,?)
-    `).run(nombre, telefono, correo||'', ciudad||'', fechaVisita, hora,
-           interes, notas||'', contactadoPor, nivelInteres||'', fechaRegistro);
+        (nombre,telefono,correo,ciudad,fechavisita,hora,interes,notas,
+         estatus,contactadopor,nivelinteres,fecharegistro)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'Pendiente',$9,$10,$11)
+      RETURNING *
+    `, [nombre, telefono, correo||'', ciudad||'', fechaVisita, hora,
+        interes, notas||'', contactadoPor, nivelInteres||'', fechaRegistro]);
 
-    res.json(db.prepare('SELECT * FROM visitas WHERE id=?').get(lastInsertRowid));
+    res.json(mapRow(rows[0]));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.put('/api/visita/:id', (req, res) => {
+app.put('/api/visita/:id', async (req, res) => {
   try {
     const { nombre, telefono, correo, ciudad, fechaVisita, hora,
             interes, notas, estatus, contactadoPor, nivelInteres } = req.body;
     if (!nombre || !telefono || !fechaVisita || !hora || !interes || !estatus || !contactadoPor)
       return res.status(400).json({ error: 'Faltan campos obligatorios' });
 
-    const { changes } = db.prepare(`
+    const { rowCount } = await pool.query(`
       UPDATE visitas SET
-        nombre=?,telefono=?,correo=?,ciudad=?,fechaVisita=?,hora=?,
-        interes=?,notas=?,estatus=?,contactadoPor=?,nivelInteres=?
-      WHERE id=?
-    `).run(nombre, telefono, correo||'', ciudad||'', fechaVisita, hora,
-           interes, notas||'', estatus, contactadoPor, nivelInteres||'',
-           req.params.id);
+        nombre=$1, telefono=$2, correo=$3, ciudad=$4, fechavisita=$5,
+        hora=$6, interes=$7, notas=$8, estatus=$9,
+        contactadopor=$10, nivelinteres=$11
+      WHERE id=$12
+    `, [nombre, telefono, correo||'', ciudad||'', fechaVisita, hora,
+        interes, notas||'', estatus, contactadoPor, nivelInteres||'',
+        req.params.id]);
 
-    if (changes === 0) return res.status(404).json({ error: 'Registro no encontrado' });
+    if (rowCount === 0) return res.status(404).json({ error: 'Registro no encontrado' });
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.put('/api/visita/:id/estatus', (req, res) => {
+app.put('/api/visita/:id/estatus', async (req, res) => {
   try {
     const { estatus } = req.body;
     const valid = ['Pendiente','Confirmada','Realizada','Cancelada','Sin éxito'];
     if (!valid.includes(estatus)) return res.status(400).json({ error: 'Estatus inválido' });
 
-    const { changes } = db.prepare('UPDATE visitas SET estatus=? WHERE id=?')
-                          .run(estatus, req.params.id);
-    if (changes === 0) return res.status(404).json({ error: 'Registro no encontrado' });
+    const { rowCount } = await pool.query(
+      'UPDATE visitas SET estatus=$1 WHERE id=$2', [estatus, req.params.id]
+    );
+    if (rowCount === 0) return res.status(404).json({ error: 'Registro no encontrado' });
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-app.delete('/api/visita/:id', (req, res) => {
+app.delete('/api/visita/:id', async (req, res) => {
   try {
-    const { changes } = db.prepare('DELETE FROM visitas WHERE id=?').run(req.params.id);
-    if (changes === 0) return res.status(404).json({ error: 'Registro no encontrado' });
+    const { rowCount } = await pool.query(
+      'DELETE FROM visitas WHERE id=$1', [req.params.id]
+    );
+    if (rowCount === 0) return res.status(404).json({ error: 'Registro no encontrado' });
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.get('/api/export-excel', async (req, res) => {
   try {
-    const rows = db.prepare('SELECT * FROM visitas ORDER BY id ASC').all();
-    const wb   = await buildExcel(rows);
+    const { rows } = await pool.query('SELECT * FROM visitas ORDER BY id ASC');
+    const wb = await buildExcel(rows.map(mapRow));
     res.setHeader('Content-Type',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.setHeader('Content-Disposition',
@@ -261,8 +298,17 @@ app.get('/api/export-excel', async (req, res) => {
 
 // ─── Start ────────────────────────────────────────────────────────────────────
 
-importFromExcel().then(() => {
-  app.listen(PORT, () => {
-    console.log(`\n✅  ANERA Visitas corriendo en http://localhost:${PORT}\n`);
-  });
-});
+async function start() {
+  try {
+    await initDB();
+    await importFromExcel();
+    app.listen(PORT, () => {
+      console.log(`\n✅  ANERA Visitas corriendo en http://localhost:${PORT}\n`);
+    });
+  } catch (e) {
+    console.error('❌  Error al iniciar:', e.message);
+    process.exit(1);
+  }
+}
+
+start();
