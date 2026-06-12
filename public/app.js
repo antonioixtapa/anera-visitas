@@ -65,13 +65,14 @@ function renderDashboard(data) {
           <td>${esc(v.fechaVisita)}</td>
           <td>${esc(v.interes)}</td>
           <td>${badgeNivel(v.nivelInteres)}</td>
+          <td>${badgeVisito(v.id, v.visito)}</td>
           <td>${v.notas ? `<button class="btn-nota" onclick="verNota(${v.id})" title="Ver nota">📋</button>` : '<span class="sub-text">—</span>'}</td>
           <td><div class="acciones">
             <button class="btn-edit" onclick="abrirEditar(${v.id})" title="Editar">✎</button>
             <button class="btn-del"  onclick="eliminarVisita(${v.id})" title="Eliminar">✕</button>
           </div></td>
         </tr>`).join('')
-    : `<tr><td colspan="8" class="empty-row">Sin registros todavía.</td></tr>`;
+    : `<tr><td colspan="9" class="empty-row">Sin registros todavía.</td></tr>`;
 }
 
 function renderTablaRegistros(data) {
@@ -97,6 +98,7 @@ function renderTablaRegistros(data) {
       <td>${esc(v.fechaVisita)}</td>
       <td>${esc(v.interes)}</td>
       <td>${badgeNivel(v.nivelInteres)}</td>
+      <td>${badgeVisito(v.id, v.visito)}</td>
       <td>${esc(v.contactadoPor || '—')}</td>
       <td>${v.notas ? `<button class="btn-nota" onclick="verNota(${v.id})" title="Ver nota">📋</button>` : '<span class="sub-text">—</span>'}</td>
       <td><div class="acciones">
@@ -175,6 +177,7 @@ function abrirEditar(id) {
   f.contactadoPor.value = v.contactadoPor || '';
   f.estatus.value       = v.estatus       || 'Pendiente';
   f.notas.value         = v.notas         || '';
+  f.visito.checked      = v.visito        || false;
   document.querySelectorAll('#form-editar [name="nivelInteres"]').forEach(r => {
     r.checked = r.value === (v.nivelInteres || '');
   });
@@ -210,6 +213,28 @@ document.getElementById('form-editar').addEventListener('submit', async e => {
     msg.textContent = '✗ ' + err.message;
   }
 });
+
+// ── Visito toggle ─────────────────────────────────────────────────────────────
+
+function badgeVisito(id, visito) {
+  return visito
+    ? `<button class="badge-visito" onclick="toggleVisito(${id}, true)" title="Clic para desmarcar">✓ Visitó</button>`
+    : `<button class="badge-visito-no" onclick="toggleVisito(${id}, false)" title="Clic para marcar">🏠</button>`;
+}
+
+async function toggleVisito(id, actual) {
+  try {
+    const res = await fetch(`/api/visita/${id}/visito`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ visito: !actual }),
+    });
+    if (!res.ok) throw new Error();
+    await loadVisitas();
+  } catch {
+    alert('No se pudo actualizar.');
+  }
+}
 
 // ── Nota modal ────────────────────────────────────────────────────────────────
 

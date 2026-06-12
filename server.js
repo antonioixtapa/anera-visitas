@@ -30,6 +30,7 @@ const mapRow = r => ({
   contactadoPor: r.contactadopor,
   nivelInteres:  r.nivelinteres,
   fechaRegistro: r.fecharegistro,
+  visito:        r.visito || false,
 });
 
 async function initDB() {
@@ -47,8 +48,12 @@ async function initDB() {
       estatus       TEXT DEFAULT 'Pendiente',
       contactadopor TEXT DEFAULT '',
       nivelinteres  TEXT DEFAULT '',
-      fecharegistro TEXT DEFAULT ''
+      fecharegistro TEXT DEFAULT '',
+      visito        BOOLEAN DEFAULT false
     )
+  `);
+  await pool.query(`
+    ALTER TABLE visitas ADD COLUMN IF NOT EXISTS visito BOOLEAN DEFAULT false
   `);
 }
 
@@ -197,14 +202,15 @@ app.post('/api/visita', async (req, res) => {
       return res.status(400).json({ error: 'Faltan campos obligatorios' });
 
     const fechaRegistro = new Date().toLocaleString('es-MX', { timeZone: 'America/Mexico_City' });
+    const visito = req.body.visito === 'true' || req.body.visito === true;
     const { rows } = await pool.query(`
       INSERT INTO visitas
         (nombre,telefono,correo,ciudad,fechavisita,hora,interes,notas,
-         estatus,contactadopor,nivelinteres,fecharegistro)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'Pendiente',$9,$10,$11)
+         estatus,contactadopor,nivelinteres,fecharegistro,visito)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'Pendiente',$9,$10,$11,$12)
       RETURNING *
     `, [nombre, telefono, correo||'', ciudad||'', fechaVisita, hora,
-        interes, notas||'', contactadoPor, nivelInteres||'', fechaRegistro]);
+        interes, notas||'', contactadoPor, nivelInteres||'', fechaRegistro, visito]);
 
     res.json(mapRow(rows[0]));
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -217,16 +223,28 @@ app.put('/api/visita/:id', async (req, res) => {
     if (!nombre || !telefono || !fechaVisita || !hora || !interes || !estatus || !contactadoPor)
       return res.status(400).json({ error: 'Faltan campos obligatorios' });
 
+    const visito = req.body.visito === 'true' || req.body.visito === true;
     const { rowCount } = await pool.query(`
       UPDATE visitas SET
         nombre=$1, telefono=$2, correo=$3, ciudad=$4, fechavisita=$5,
         hora=$6, interes=$7, notas=$8, estatus=$9,
-        contactadopor=$10, nivelinteres=$11
-      WHERE id=$12
+        contactadopor=$10, nivelinteres=$11, visito=$12
+      WHERE id=$13
     `, [nombre, telefono, correo||'', ciudad||'', fechaVisita, hora,
-        interes, notas||'', estatus, contactadoPor, nivelInteres||'',
+        interes, notas||'', estatus, contactadoPor, nivelInteres||'', visito,
         req.params.id]);
 
+    if (rowCount === 0) return res.status(404).json({ error: 'Registro no encontrado' });
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/visita/:id/visito', async (req, res) => {
+  try {
+    const visito = req.body.visito === true || req.body.visito === 'true';
+    const { rowCount } = await pool.query(
+      'UPDATE visitas SET visito=$1 WHERE id=$2', [visito, req.params.id]
+    );
     if (rowCount === 0) return res.status(404).json({ error: 'Registro no encontrado' });
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }

@@ -82,7 +82,7 @@
           <thead>
             <tr>
               <th>#</th><th>Nombre</th><th>Ciudad</th>
-              <th>Fecha</th><th>Interés</th><th>Estatus</th><th>Notas</th><th></th>
+              <th>Fecha</th><th>Interés</th><th>Estatus</th><th>Visitó</th><th>Notas</th><th></th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -163,6 +163,15 @@
               </div>
             </div>
 
+            <div class="field">
+              <label>¿Ya visitó el desarrollo?</label>
+              <label class="toggle-label">
+                <input type="checkbox" name="visito" value="true" />
+                <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                <span class="toggle-text">Visitó</span>
+              </label>
+            </div>
+
             <div class="field full">
               <label>Notas Internas</label>
               <textarea name="notas" rows="3" placeholder="Observaciones, referencia, cómo nos contactó…"></textarea>
@@ -204,6 +213,7 @@
               <th>Fecha</th>
               <th>Interés</th>
               <th>Estatus</th>
+              <th>Visitó</th>
               <th>Contactado por</th>
               <th>Notas</th>
               <th></th>
@@ -289,6 +299,15 @@
               <label for="niv-solo-m" class="nivel-btn nivel-solo">Solo explorando</label>
             </div>
           </div>
+          <div class="field">
+            <label>¿Ya visitó el desarrollo?</label>
+            <label class="toggle-label">
+              <input type="checkbox" name="visito" value="true" />
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+              <span class="toggle-text">Visitó</span>
+            </label>
+          </div>
+
           <div class="field full">
             <label>Notas Internas</label>
             <textarea name="notas" rows="3"></textarea>
