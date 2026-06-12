@@ -10,7 +10,9 @@ const PORT = process.env.PORT || 3000;
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
+  ssl: process.env.DATABASE_URL && process.env.DATABASE_URL.includes('railway.internal')
+    ? false
+    : { rejectUnauthorized: false },
 });
 
 const XLSX_PATH   = path.join(__dirname, 'ANERA-Visitas.xlsx');
@@ -271,15 +273,18 @@ app.get('/api/export-excel', async (req, res) => {
 
 async function start() {
   console.log('DATABASE_URL definida:', !!process.env.DATABASE_URL);
+  console.log('PORT:', PORT);
+
+  app.listen(PORT, () => {
+    console.log(`ANERA Visitas corriendo en http://localhost:${PORT}`);
+  });
+
   try {
     await initDB();
     await importFromExcel();
-    app.listen(PORT, () => {
-      console.log(`ANERA Visitas corriendo en http://localhost:${PORT}`);
-    });
+    console.log('Base de datos lista');
   } catch (err) {
-    console.error('Error al iniciar:', err);
-    process.exit(1);
+    console.error('Error al conectar DB:', err);
   }
 }
 
