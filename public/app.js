@@ -35,6 +35,43 @@ function cerrarSidebar() {
   sidebarOverlay.classList.remove('active');
 }
 
+// ── Sort state ────────────────────────────────────────────────────────────────
+
+let sortState = { col: null, dir: 'asc' };
+
+document.querySelector('#tbl-registros thead').addEventListener('click', e => {
+  const th = e.target.closest('.sortable');
+  if (!th) return;
+  const col = th.dataset.col;
+  if (sortState.col === col) {
+    sortState.dir = sortState.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortState.col = col;
+    sortState.dir = 'asc';
+  }
+  filtrarTabla();
+  updateSortHeaders();
+});
+
+function updateSortHeaders() {
+  document.querySelectorAll('#tbl-registros th.sortable').forEach(th => {
+    th.classList.remove('sort-asc', 'sort-desc');
+    if (th.dataset.col === sortState.col) {
+      th.classList.add(sortState.dir === 'asc' ? 'sort-asc' : 'sort-desc');
+    }
+  });
+}
+
+function applySortOrder(data) {
+  if (!sortState.col) return data;
+  return [...data].sort((a, b) => {
+    const va = (a[sortState.col] || '').toString().toLowerCase();
+    const vb = (b[sortState.col] || '').toString().toLowerCase();
+    const cmp = va < vb ? -1 : va > vb ? 1 : 0;
+    return sortState.dir === 'asc' ? cmp : -cmp;
+  });
+}
+
 // ── Load & render ─────────────────────────────────────────────────────────────
 
 async function loadVisitas() {
@@ -85,7 +122,8 @@ function renderTablaRegistros(data) {
   }
   empty.style.display = 'none';
 
-  tbody.innerHTML = [...data].reverse().map(v => `
+  const sorted = sortState.col ? applySortOrder(data) : [...data].reverse();
+  tbody.innerHTML = sorted.map(v => `
     <tr id="row-${v.id}">
       <td>${v.id}</td>
       <td>

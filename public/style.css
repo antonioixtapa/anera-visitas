@@ -261,6 +261,21 @@ tr:hover td { background: #f7f9fc; }
 .sub-text  { color: var(--muted); font-size: 12px; }
 .empty-row { text-align: center; color: var(--muted); padding: 32px !important; }
 
+/* ── Sortable headers ─────────────────────────────────────── */
+th.sortable {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+th.sortable:hover { background: #e4eaf2; }
+th.sortable::after {
+  content: ' ↕';
+  font-size: 10px;
+  opacity: .4;
+}
+th.sort-asc::after  { content: ' ↑'; opacity: 1; color: var(--navy); }
+th.sort-desc::after { content: ' ↓'; opacity: 1; color: var(--navy); }
+
 /* ── Status badges ────────────────────────────────────────── */
 .badge {
   display: inline-block;
