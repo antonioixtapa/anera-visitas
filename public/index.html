@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ANERA Playa Blanca — Visitas</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- MOBILE HEADER -->
+  <header class="mobile-header">
+    <button class="hamburger" id="hamburger" aria-label="Menú">
+      <span></span><span></span><span></span>
+    </button>
+    <img src="logo.png" alt="ANERA" class="mobile-logo" />
+  </header>
+
+  <!-- SIDEBAR OVERLAY -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="logo-wrap">
+      <img src="logo.png" alt="ANERA" class="logo-img" />
+      <div class="logo-sub">Playa Blanca</div>
+    </div>
+    <nav>
+      <a href="#" class="nav-link active" data-view="dashboard">
+        <span class="nav-icon">▦</span> Dashboard
+      </a>
+      <a href="#" class="nav-link" data-view="nueva">
+        <span class="nav-icon">＋</span> Nueva Visita
+      </a>
+      <a href="#" class="nav-link" data-view="registros">
+        <span class="nav-icon">☰</span> Registros
+      </a>
+    </nav>
+    <div class="sidebar-footer">Ixtapa-Zihuatanejo</div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ── DASHBOARD ─────────────────────────────────────────── -->
+    <section id="view-dashboard" class="view active">
+      <header class="page-header">
+        <div>
+          <h1>Dashboard</h1>
+          <p class="subtitle">Resumen de visitas al desarrollo</p>
+        </div>
+        <button class="btn btn-excel" onclick="exportExcel()">
+          📊 Exportar Excel
+        </button>
+      </header>
+
+      <div class="cards">
+        <div class="card card-total">
+          <div class="card-label">Total Visitas</div>
+          <div class="card-num" id="cnt-total">—</div>
+        </div>
+        <div class="card card-pendiente">
+          <div class="card-label">Pendientes</div>
+          <div class="card-num" id="cnt-pendiente">—</div>
+        </div>
+        <div class="card card-confirmada">
+          <div class="card-label">Confirmadas</div>
+          <div class="card-num" id="cnt-confirmada">—</div>
+        </div>
+        <div class="card card-realizada">
+          <div class="card-label">Realizadas</div>
+          <div class="card-num" id="cnt-realizada">—</div>
+        </div>
+      </div>
+
+      <div class="section-title">Visitas recientes</div>
+      <div class="table-wrap">
+        <table id="tbl-recientes">
+          <thead>
+            <tr>
+              <th>#</th><th>Nombre</th><th>Ciudad</th>
+              <th>Fecha</th><th>Interés</th><th>Nivel</th><th>Estatus</th><th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── NUEVA VISITA ───────────────────────────────────────── -->
+    <section id="view-nueva" class="view">
+      <header class="page-header">
+        <div>
+          <h1>Nueva Visita</h1>
+          <p class="subtitle">Registrar prospecto o visita programada</p>
+        </div>
+      </header>
+
+      <div class="form-card">
+        <form id="form-visita" autocomplete="off">
+          <div class="form-grid">
+
+            <div class="field full">
+              <label>Nombre Completo <span class="req">*</span></label>
+              <input type="text" name="nombre" placeholder="Ej. Juan Pérez López" required />
+            </div>
+
+            <div class="field">
+              <label>Teléfono / WhatsApp <span class="req">*</span></label>
+              <input type="tel" name="telefono" placeholder="+52 755 000 0000" required />
+            </div>
+
+            <div class="field">
+              <label>Correo Electrónico</label>
+              <input type="email" name="correo" placeholder="correo@ejemplo.com" />
+            </div>
+
+            <div class="field">
+              <label>Ciudad de Origen</label>
+              <input type="text" name="ciudad" placeholder="Ej. Ciudad de México" />
+            </div>
+
+            <div class="field">
+              <label>Interés de Compra <span class="req">*</span></label>
+              <select name="interes" required>
+                <option value="" disabled selected>Seleccionar…</option>
+                <option>Villa completa</option>
+                <option>Fracción</option>
+                <option>Bodega</option>
+                <option>Pre-venta</option>
+                <option>Solo información</option>
+                <option>Referido</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Fecha de Visita <span class="req">*</span></label>
+              <input type="date" name="fechaVisita" required />
+            </div>
+
+            <div class="field">
+              <label>Hora <span class="req">*</span></label>
+              <input type="time" name="hora" required />
+            </div>
+
+            <div class="field">
+              <label>Contactado por <span class="req">*</span></label>
+              <input type="text" name="contactadoPor" placeholder="Ej. Antonio" required />
+            </div>
+
+            <div class="field full">
+              <label>Nivel de Interés <span class="req">*</span></label>
+              <div class="nivel-group">
+                <input type="radio" id="niv-alto" name="nivelInteres" value="Alto interés" required />
+                <label for="niv-alto" class="nivel-btn nivel-alto">Alto interés</label>
+                <input type="radio" id="niv-seg" name="nivelInteres" value="En seguimiento" />
+                <label for="niv-seg" class="nivel-btn nivel-seguimiento">En seguimiento</label>
+                <input type="radio" id="niv-solo" name="nivelInteres" value="Solo explorando" />
+                <label for="niv-solo" class="nivel-btn nivel-solo">Solo explorando</label>
+              </div>
+            </div>
+
+            <div class="field full">
+              <label>Notas Internas</label>
+              <textarea name="notas" rows="3" placeholder="Observaciones, referencia, cómo nos contactó…"></textarea>
+            </div>
+
+          </div>
+
+          <div id="form-msg" class="form-msg"></div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-outline" onclick="resetForm()">Limpiar</button>
+            <button type="submit" class="btn btn-primary">Guardar Visita</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ── REGISTROS ─────────────────────────────────────────── -->
+    <section id="view-registros" class="view">
+      <header class="page-header">
+        <div>
+          <h1>Todos los Registros</h1>
+          <p class="subtitle">Gestión y seguimiento de visitas</p>
+        </div>
+        <div class="header-actions">
+          <input id="buscador" type="search" placeholder="Buscar…" oninput="filtrarTabla()" />
+          <button class="btn btn-excel" onclick="exportExcel()">📊 Exportar Excel</button>
+        </div>
+      </header>
+
+      <div class="table-wrap">
+        <table id="tbl-registros">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Nombre</th>
+              <th>Teléfono</th>
+              <th>Ciudad</th>
+              <th>Fecha</th>
+              <th>Hora</th>
+              <th>Interés</th>
+              <th>Nivel</th>
+              <th>Contactado por</th>
+              <th>Estatus</th>
+              <th>Notas</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div id="empty-state" class="empty-state" style="display:none">
+          Sin registros todavía.
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── MODAL EDITAR ──────────────────────────────────────── -->
+  <div id="modal-overlay" class="modal-overlay" onclick="cerrarModal(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Editar Visita</h2>
+        <button class="modal-close" onclick="cerrarModal()">&times;</button>
+      </div>
+      <form id="form-editar" autocomplete="off">
+        <input type="hidden" name="id" />
+        <div class="form-grid">
+          <div class="field full">
+            <label>Nombre Completo <span class="req">*</span></label>
+            <input type="text" name="nombre" required />
+          </div>
+          <div class="field">
+            <label>Teléfono / WhatsApp <span class="req">*</span></label>
+            <input type="tel" name="telefono" required />
+          </div>
+          <div class="field">
+            <label>Correo Electrónico</label>
+            <input type="email" name="correo" />
+          </div>
+          <div class="field">
+            <label>Ciudad de Origen</label>
+            <input type="text" name="ciudad" />
+          </div>
+          <div class="field">
+            <label>Interés de Compra <span class="req">*</span></label>
+            <select name="interes" required>
+              <option>Villa completa</option>
+              <option>Fracción</option>
+              <option>Bodega</option>
+              <option>Pre-venta</option>
+              <option>Solo información</option>
+              <option>Referido</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Fecha de Visita <span class="req">*</span></label>
+            <input type="date" name="fechaVisita" required />
+          </div>
+          <div class="field">
+            <label>Hora <span class="req">*</span></label>
+            <input type="time" name="hora" required />
+          </div>
+          <div class="field">
+            <label>Contactado por <span class="req">*</span></label>
+            <input type="text" name="contactadoPor" required />
+          </div>
+          <div class="field">
+            <label>Estatus <span class="req">*</span></label>
+            <select name="estatus" required>
+              <option>Pendiente</option>
+              <option>Confirmada</option>
+              <option>Realizada</option>
+              <option>Cancelada</option>
+            </select>
+          </div>
+          <div class="field full">
+            <label>Nivel de Interés <span class="req">*</span></label>
+            <div class="nivel-group">
+              <input type="radio" id="niv-alto-m" name="nivelInteres" value="Alto interés" required />
+              <label for="niv-alto-m" class="nivel-btn nivel-alto">Alto interés</label>
+              <input type="radio" id="niv-seg-m" name="nivelInteres" value="En seguimiento" />
+              <label for="niv-seg-m" class="nivel-btn nivel-seguimiento">En seguimiento</label>
+              <input type="radio" id="niv-solo-m" name="nivelInteres" value="Solo explorando" />
+              <label for="niv-solo-m" class="nivel-btn nivel-solo">Solo explorando</label>
+            </div>
+          </div>
+          <div class="field full">
+            <label>Notas Internas</label>
+            <textarea name="notas" rows="3"></textarea>
+          </div>
+        </div>
+        <div id="modal-msg" class="form-msg"></div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" onclick="cerrarModal()">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
