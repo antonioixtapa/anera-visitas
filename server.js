@@ -10,14 +10,11 @@ const PORT = process.env.PORT || 3000;
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  ssl: { rejectUnauthorized: false },
 });
 
-const XLSX_PATH = path.join(__dirname, 'ANERA-Visitas.xlsx');
-
+const XLSX_PATH   = path.join(__dirname, 'ANERA-Visitas.xlsx');
 const CREDENTIALS = { usuario: 'anera', password: 'playablanca2026' };
-
-// ─── Row mapper (DB lowercase → JS camelCase) ─────────────────────────────────
 
 const mapRow = r => ({
   id:            r.id,
@@ -34,8 +31,6 @@ const mapRow = r => ({
   nivelInteres:  r.nivelinteres,
   fechaRegistro: r.fecharegistro,
 });
-
-// ─── DB init ──────────────────────────────────────────────────────────────────
 
 async function initDB() {
   await pool.query(`
@@ -57,8 +52,6 @@ async function initDB() {
   `);
 }
 
-// ─── Import Excel → PostgreSQL (solo si la tabla está vacía) ─────────────────
-
 async function importFromExcel() {
   const { rows: [{ n }] } = await pool.query('SELECT COUNT(*)::int AS n FROM visitas');
   if (n > 0 || !fs.existsSync(XLSX_PATH)) return;
@@ -69,7 +62,6 @@ async function importFromExcel() {
   if (!ws) return;
 
   const str = x => (x == null ? '' : String(x instanceof Date ? x.toLocaleDateString('es-MX') : x));
-
   const records = [];
   ws.eachRow((row, i) => {
     if (i === 1) return;
@@ -80,7 +72,6 @@ async function importFromExcel() {
       str(v[10]) || 'Pendiente', str(v[11]), str(v[12]), str(v[13]),
     ]);
   });
-
   if (!records.length) return;
 
   const client = await pool.connect();
@@ -95,7 +86,7 @@ async function importFromExcel() {
       `, r);
     }
     await client.query('COMMIT');
-    console.log(`📥  ${records.length} registros importados desde Excel`);
+    console.log(`Importados ${records.length} registros desde Excel`);
   } catch (e) {
     await client.query('ROLLBACK');
     console.error('Error importando Excel:', e.message);
@@ -104,22 +95,20 @@ async function importFromExcel() {
   }
 }
 
-// ─── Excel export helper ──────────────────────────────────────────────────────
-
 const EXCEL_COLS = [
-  { header: 'ID',               key: 'id',            width: 6  },
-  { header: 'Nombre Completo',  key: 'nombre',        width: 28 },
-  { header: 'Teléfono/WhatsApp',key: 'telefono',      width: 18 },
-  { header: 'Correo',           key: 'correo',        width: 28 },
-  { header: 'Ciudad de Origen', key: 'ciudad',        width: 20 },
-  { header: 'Fecha Visita',     key: 'fechaVisita',   width: 14 },
-  { header: 'Hora',             key: 'hora',          width: 8  },
-  { header: 'Interés de Compra',key: 'interes',       width: 20 },
-  { header: 'Notas Internas',   key: 'notas',         width: 40 },
-  { header: 'Seguimiento',      key: 'estatus',       width: 14 },
-  { header: 'Contactado por',   key: 'contactadoPor', width: 16 },
-  { header: 'Estatus',          key: 'nivelInteres',  width: 18 },
-  { header: 'Fecha Registro',   key: 'fechaRegistro', width: 20 },
+  { header: 'ID',                key: 'id',            width: 6  },
+  { header: 'Nombre Completo',   key: 'nombre',        width: 28 },
+  { header: 'Teléfono/WhatsApp', key: 'telefono',      width: 18 },
+  { header: 'Correo',            key: 'correo',        width: 28 },
+  { header: 'Ciudad de Origen',  key: 'ciudad',        width: 20 },
+  { header: 'Fecha Visita',      key: 'fechaVisita',   width: 14 },
+  { header: 'Hora',              key: 'hora',          width: 8  },
+  { header: 'Interés de Compra', key: 'interes',       width: 20 },
+  { header: 'Notas Internas',    key: 'notas',         width: 40 },
+  { header: 'Seguimiento',       key: 'estatus',       width: 14 },
+  { header: 'Contactado por',    key: 'contactadoPor', width: 16 },
+  { header: 'Estatus',           key: 'nivelInteres',  width: 18 },
+  { header: 'Fecha Registro',    key: 'fechaRegistro', width: 20 },
 ];
 
 async function buildExcel(rows) {
@@ -149,8 +138,6 @@ async function buildExcel(rows) {
   return wb;
 }
 
-// ─── Express setup ────────────────────────────────────────────────────────────
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -160,8 +147,6 @@ app.use(session({
   saveUninitialized: false,
   cookie: { maxAge: 8 * 60 * 60 * 1000 },
 }));
-
-// ─── Login / Logout ───────────────────────────────────────────────────────────
 
 app.get('/login', (req, res) => {
   if (req.session.auth) return res.redirect('/');
@@ -181,8 +166,6 @@ app.post('/api/logout', (req, res) => {
   req.session.destroy(() => res.json({ ok: true }));
 });
 
-// ─── Auth middleware ──────────────────────────────────────────────────────────
-
 app.use((req, res, next) => {
   if (/\.(css|js|png|jpg|jpeg|ico|woff2?)$/.test(req.path)) return next();
   if (req.path === '/login' || req.path === '/api/login') return next();
@@ -198,8 +181,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/index.html'));
 });
-
-// ─── API Routes ───────────────────────────────────────────────────────────────
 
 app.get('/api/visitas', async (req, res) => {
   try {
@@ -288,20 +269,16 @@ app.get('/api/export-excel', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// ─── Start ────────────────────────────────────────────────────────────────────
-
 async function start() {
-  const dbUrl = process.env.DATABASE_URL;
-  console.log('DATABASE_URL (primeros 20 chars):', dbUrl ? dbUrl.substring(0, 20) : 'NO DEFINIDA');
-
+  console.log('DATABASE_URL definida:', !!process.env.DATABASE_URL);
   try {
     await initDB();
     await importFromExcel();
     app.listen(PORT, () => {
-      console.log(`\n✅  ANERA Visitas corriendo en http://localhost:${PORT}\n`);
+      console.log(`ANERA Visitas corriendo en http://localhost:${PORT}`);
     });
   } catch (err) {
-    console.error('❌  Error al iniciar:', err);
+    console.error('Error al iniciar:', err);
     process.exit(1);
   }
 }
