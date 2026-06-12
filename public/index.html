@@ -73,8 +73,8 @@
         <table id="tbl-recientes">
           <thead>
             <tr>
-              <th>#</th><th>Nombre</th><th>Ciudad</th>
-              <th>Fecha</th><th>Interés</th><th>Estatus</th><th>Visitó propiedad</th><th>Notas</th><th></th>
+              <th>#</th><th>Nombre</th>
+              <th>Fecha</th><th>Interés</th><th>Estatus</th><th>Tipo</th><th>Visitó propiedad</th><th>Notas</th><th></th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -149,6 +149,16 @@
             </div>
 
             <div class="field full">
+              <label>Tipo de visita <span class="req">*</span></label>
+              <div class="nivel-group">
+                <input type="radio" id="tipo-prospecto" name="tipoVisita" value="Prospecto de compra" required />
+                <label for="tipo-prospecto" class="nivel-btn nivel-prospecto">Prospecto de compra</label>
+                <input type="radio" id="tipo-huesped" name="tipoVisita" value="Huésped / Renter" />
+                <label for="tipo-huesped" class="nivel-btn nivel-huesped">Huésped / Renter</label>
+              </div>
+            </div>
+
+            <div class="field full">
               <label>Estatus <span class="req">*</span></label>
               <div class="nivel-group">
                 <input type="radio" id="niv-alto" name="nivelInteres" value="Alto interés" required />
@@ -210,6 +220,7 @@
               <th class="sortable" data-col="fechaVisita">Fecha</th>
               <th class="sortable" data-col="interes">Interés</th>
               <th class="sortable" data-col="estatus">Estatus</th>
+              <th>Tipo</th>
               <th>Visitó propiedad</th>
               <th>Contactado por</th>
               <th>Notas</th>
@@ -284,6 +295,15 @@
               <option>Cancelada</option>
               <option>Sin éxito</option>
             </select>
+          </div>
+          <div class="field full">
+            <label>Tipo de visita <span class="req">*</span></label>
+            <div class="nivel-group">
+              <input type="radio" id="tipo-prospecto-m" name="tipoVisita" value="Prospecto de compra" required />
+              <label for="tipo-prospecto-m" class="nivel-btn nivel-prospecto">Prospecto de compra</label>
+              <input type="radio" id="tipo-huesped-m" name="tipoVisita" value="Huésped / Renter" />
+              <label for="tipo-huesped-m" class="nivel-btn nivel-huesped">Huésped / Renter</label>
+            </div>
           </div>
           <div class="field full">
             <label>Nivel de Interés <span class="req">*</span></label>

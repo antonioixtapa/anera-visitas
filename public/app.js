@@ -123,10 +123,10 @@ function renderDashboard(data) {
         <tr>
           <td>${v.id}</td>
           <td><strong>${esc(v.nombre)}</strong></td>
-          <td>${esc(v.ciudad || '—')}</td>
           <td>${esc(v.fechaVisita)}</td>
           <td>${esc(v.interes)}</td>
           <td>${badgeNivel(v.nivelInteres)}</td>
+          <td>${badgeTipo(v.tipoVisita)}</td>
           <td>${badgeVisito(v.id, v.visito)}</td>
           <td>${v.notas ? `<button class="btn-nota" onclick="verNota(${v.id})" title="Ver nota">📋</button>` : '<span class="sub-text">—</span>'}</td>
           <td><div class="acciones">
@@ -161,6 +161,7 @@ function renderTablaRegistros(data) {
       <td>${esc(v.fechaVisita)}</td>
       <td>${esc(v.interes)}</td>
       <td>${badgeNivel(v.nivelInteres)}</td>
+      <td>${badgeTipo(v.tipoVisita)}</td>
       <td>${badgeVisito(v.id, v.visito)}</td>
       <td>${esc(v.contactadoPor || '—')}</td>
       <td>${v.notas ? `<button class="btn-nota" onclick="verNota(${v.id})" title="Ver nota">📋</button>` : '<span class="sub-text">—</span>'}</td>
@@ -242,6 +243,9 @@ function abrirEditar(id) {
   f.estatus.value       = v.estatus       || 'Pendiente';
   f.notas.value         = v.notas         || '';
   f.visito.checked      = v.visito        || false;
+  document.querySelectorAll('#form-editar [name="tipoVisita"]').forEach(r => {
+    r.checked = r.value === (v.tipoVisita || '');
+  });
   document.querySelectorAll('#form-editar [name="nivelInteres"]').forEach(r => {
     r.checked = r.value === (v.nivelInteres || '');
   });
@@ -346,6 +350,12 @@ function exportExcel() {
 }
 
 // ── Badges ────────────────────────────────────────────────────────────────────
+
+function badgeTipo(tipo) {
+  if (!tipo) return '<span class="sub-text">—</span>';
+  const cls = tipo === 'Prospecto de compra' ? 'badge-tipo-prospecto' : 'badge-tipo-huesped';
+  return `<span class="badge ${cls}">${esc(tipo)}</span>`;
+}
 
 function badgeNivel(nivel) {
   const map = {

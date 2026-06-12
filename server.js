@@ -31,6 +31,7 @@ const mapRow = r => ({
   nivelInteres:  r.nivelinteres,
   fechaRegistro: r.fecharegistro,
   visito:        r.visito || false,
+  tipoVisita:    r.tipovisita || '',
 });
 
 async function initDB() {
@@ -54,6 +55,9 @@ async function initDB() {
   `);
   await pool.query(`
     ALTER TABLE visitas ADD COLUMN IF NOT EXISTS visito BOOLEAN DEFAULT false
+  `);
+  await pool.query(`
+    ALTER TABLE visitas ADD COLUMN IF NOT EXISTS tipovisita TEXT DEFAULT ''
   `);
 }
 
@@ -197,7 +201,7 @@ app.get('/api/visitas', async (req, res) => {
 app.post('/api/visita', async (req, res) => {
   try {
     const { nombre, telefono, correo, ciudad, fechaVisita, hora,
-            interes, notas, contactadoPor, nivelInteres } = req.body;
+            interes, notas, contactadoPor, nivelInteres, tipoVisita } = req.body;
     if (!nombre || !telefono || !fechaVisita || !hora || !interes || !contactadoPor)
       return res.status(400).json({ error: 'Faltan campos obligatorios' });
 
@@ -207,11 +211,12 @@ app.post('/api/visita', async (req, res) => {
     const { rows } = await pool.query(`
       INSERT INTO visitas
         (nombre,telefono,correo,ciudad,fechavisita,hora,interes,notas,
-         estatus,contactadopor,nivelinteres,fecharegistro,visito)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'Pendiente',$9,$10,$11,$12)
+         estatus,contactadopor,nivelinteres,fecharegistro,visito,tipovisita)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'Pendiente',$9,$10,$11,$12,$13)
       RETURNING *
     `, [nombre, telefono, correo||'', ciudad||'', fechaVisita, hora,
-        interes, notas||'', contactadoPor, nivelInteres||'', fechaRegistro, visito]);
+        interes, notas||'', contactadoPor, nivelInteres||'', fechaRegistro, visito,
+        tipoVisita||'']);
 
     res.json(mapRow(rows[0]));
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -220,7 +225,7 @@ app.post('/api/visita', async (req, res) => {
 app.put('/api/visita/:id', async (req, res) => {
   try {
     const { nombre, telefono, correo, ciudad, fechaVisita, hora,
-            interes, notas, estatus, contactadoPor, nivelInteres } = req.body;
+            interes, notas, estatus, contactadoPor, nivelInteres, tipoVisita } = req.body;
     if (!nombre || !telefono || !fechaVisita || !hora || !interes || !estatus || !contactadoPor)
       return res.status(400).json({ error: 'Faltan campos obligatorios' });
 
@@ -229,11 +234,11 @@ app.put('/api/visita/:id', async (req, res) => {
       UPDATE visitas SET
         nombre=$1, telefono=$2, correo=$3, ciudad=$4, fechavisita=$5,
         hora=$6, interes=$7, notas=$8, estatus=$9,
-        contactadopor=$10, nivelinteres=$11, visito=$12
-      WHERE id=$13
+        contactadopor=$10, nivelinteres=$11, visito=$12, tipovisita=$13
+      WHERE id=$14
     `, [nombre, telefono, correo||'', ciudad||'', fechaVisita, hora,
         interes, notas||'', estatus, contactadoPor, nivelInteres||'', visito,
-        req.params.id]);
+        tipoVisita||'', req.params.id]);
 
     if (rowCount === 0) return res.status(404).json({ error: 'Registro no encontrado' });
     res.json({ ok: true });

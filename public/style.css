@@ -432,6 +432,16 @@ textarea { resize: vertical; min-height: auto; }
   font-size: 14px;
 }
 
+/* ── Tipo de visita badges ────────────────────────────────── */
+.badge-tipo-prospecto { background: #DBEAFE; color: #1e40af; }
+.badge-tipo-huesped   { background: #EDE9FE; color: #5b21b6; }
+
+/* ── Tipo de visita radio buttons ─────────────────────────── */
+.nivel-prospecto { border-color: #93c5fd !important; }
+input:checked + .nivel-prospecto { background: #1d4ed8 !important; color: #fff !important; border-color: #1d4ed8 !important; }
+.nivel-huesped   { border-color: #c4b5fd !important; }
+input:checked + .nivel-huesped   { background: #7c3aed !important; color: #fff !important; border-color: #7c3aed !important; }
+
 /* ── Visito toggle ────────────────────────────────────────── */
 .badge-visito, .badge-visito-no {
   border: none;
