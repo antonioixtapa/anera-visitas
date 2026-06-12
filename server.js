@@ -203,10 +203,17 @@ app.get('/api/visitas', async (req, res) => {
 
 app.post('/api/visita', async (req, res) => {
   try {
-    const { nombre, telefono, correo, ciudad, fechaVisita, hora,
-            interes, notas, contactadoPor, nivelInteres, canalIngreso } = req.body;
-    if (!nombre || !telefono || !fechaVisita || !hora || !interes || !contactadoPor)
+    const { nombre, correo, ciudad, interes, notas, contactadoPor,
+            nivelInteres, canalIngreso } = req.body;
+    if (!nombre || !interes || !contactadoPor)
       return res.status(400).json({ error: 'Faltan campos obligatorios' });
+
+    const telefono = req.body.telefono || '';
+    let fechaVisita = req.body.fechaVisita || '';
+    let hora = req.body.hora || '';
+    if (fechaVisita.includes('T')) {
+      [fechaVisita, hora] = fechaVisita.split('T');
+    }
 
     const visito = req.body.visito === 'true' || req.body.visito === true;
     const fechaRegistro = req.body.fechaRegistro ||
@@ -227,10 +234,17 @@ app.post('/api/visita', async (req, res) => {
 
 app.put('/api/visita/:id', async (req, res) => {
   try {
-    const { nombre, telefono, correo, ciudad, fechaVisita, hora,
-            interes, notas, estatus, contactadoPor, nivelInteres, canalIngreso } = req.body;
-    if (!nombre || !telefono || !fechaVisita || !hora || !interes || !estatus || !contactadoPor)
+    const { nombre, correo, ciudad, interes, notas, estatus,
+            contactadoPor, nivelInteres, canalIngreso } = req.body;
+    if (!nombre || !interes || !estatus || !contactadoPor)
       return res.status(400).json({ error: 'Faltan campos obligatorios' });
+
+    const telefono = req.body.telefono || '';
+    let fechaVisita = req.body.fechaVisita || '';
+    let hora = req.body.hora || '';
+    if (fechaVisita.includes('T')) {
+      [fechaVisita, hora] = fechaVisita.split('T');
+    }
 
     const visito = req.body.visito === 'true' || req.body.visito === true;
     const { rowCount } = await pool.query(`

@@ -236,8 +236,9 @@ function abrirEditar(id) {
   f.telefono.value      = v.telefono      || '';
   f.correo.value        = v.correo        || '';
   f.ciudad.value        = v.ciudad        || '';
-  f.fechaVisita.value   = v.fechaVisita   || '';
-  f.hora.value          = v.hora          || '';
+  f.fechaVisita.value   = v.fechaVisita && v.hora
+    ? v.fechaVisita + 'T' + v.hora
+    : (v.fechaVisita || '');
   f.interes.value       = v.interes       || '';
   f.contactadoPor.value = v.contactadoPor || '';
   f.estatus.value       = v.estatus       || 'Pendiente';
