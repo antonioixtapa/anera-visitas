@@ -8,10 +8,6 @@ const fs       = require('fs');
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
-const DATABASE_URL =
-  process.env.DATABASE_URL ||
-  'postgresql://postgres:jprVrMIAPvWIBXsIAPvWIBXsIZLMzqizODgFnzink@postgres.railway.internal:5432/railway';
-
 const XLSX_PATH = path.join(__dirname, 'ANERA-Visitas.xlsx');
 
 const CREDENTIALS = { usuario: 'anera', password: 'playablanca2026' };
@@ -19,10 +15,12 @@ const CREDENTIALS = { usuario: 'anera', password: 'playablanca2026' };
 // ─── PostgreSQL pool ──────────────────────────────────────────────────────────
 
 const pool = new Pool({
-  connectionString: DATABASE_URL,
-  ssl: DATABASE_URL.includes('railway.internal')
-    ? false
-    : { rejectUnauthorized: false },
+  host:     process.env.PGHOST,
+  port:     parseInt(process.env.PGPORT || '5432'),
+  user:     process.env.PGUSER,
+  password: process.env.PGPASSWORD,
+  database: process.env.PGDATABASE,
+  ssl: { rejectUnauthorized: false },
 });
 
 // ─── Row mapper (DB lowercase → JS camelCase) ─────────────────────────────────
