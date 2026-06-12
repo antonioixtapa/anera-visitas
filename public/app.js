@@ -11,9 +11,17 @@ document.querySelectorAll('.nav-link').forEach(link => {
     link.classList.add('active');
     document.getElementById('view-' + view).classList.add('active');
     if (view === 'dashboard' || view === 'registros') loadVisitas();
+    if (view === 'nueva') initFechaRegistro();
     cerrarSidebar();
   });
 });
+
+function initFechaRegistro() {
+  const el = document.getElementById('input-fecha-registro');
+  if (el && !el.value) {
+    el.value = new Date().toISOString().slice(0, 10);
+  }
+}
 
 // ── Hamburger ─────────────────────────────────────────────────────────────────
 
@@ -195,6 +203,7 @@ document.getElementById('form-visita').addEventListener('submit', async e => {
 function resetForm() {
   document.getElementById('form-visita').reset();
   document.getElementById('form-msg').className = 'form-msg';
+  initFechaRegistro();
 }
 
 // ── Status change ─────────────────────────────────────────────────────────────

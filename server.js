@@ -201,8 +201,9 @@ app.post('/api/visita', async (req, res) => {
     if (!nombre || !telefono || !fechaVisita || !hora || !interes || !contactadoPor)
       return res.status(400).json({ error: 'Faltan campos obligatorios' });
 
-    const fechaRegistro = new Date().toLocaleString('es-MX', { timeZone: 'America/Mexico_City' });
     const visito = req.body.visito === 'true' || req.body.visito === true;
+    const fechaRegistro = req.body.fechaRegistro ||
+      new Date().toLocaleDateString('es-MX', { timeZone: 'America/Mexico_City' });
     const { rows } = await pool.query(`
       INSERT INTO visitas
         (nombre,telefono,correo,ciudad,fechavisita,hora,interes,notas,
