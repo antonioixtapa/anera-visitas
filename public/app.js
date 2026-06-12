@@ -127,7 +127,6 @@ function renderDashboard(data) {
           <td>${badgeCanal(v.canalIngreso)}</td>
           <td>${esc(v.interes)}</td>
           <td>${badgeNivel(v.nivelInteres)}</td>
-          <td>${badgeTipo(v.tipoVisita)}</td>
           <td>${badgeVisito(v.id, v.visito)}</td>
           <td>${v.notas ? `<button class="btn-nota" onclick="verNota(${v.id})" title="Ver nota">📋</button>` : '<span class="sub-text">—</span>'}</td>
           <td><div class="acciones">
@@ -135,7 +134,7 @@ function renderDashboard(data) {
             <button class="btn-del"  onclick="eliminarVisita(${v.id})" title="Eliminar">✕</button>
           </div></td>
         </tr>`).join('')
-    : `<tr><td colspan="9" class="empty-row">Sin registros todavía.</td></tr>`;
+    : `<tr><td colspan="8" class="empty-row">Sin registros todavía.</td></tr>`;
 }
 
 function renderTablaRegistros(data) {
@@ -163,7 +162,6 @@ function renderTablaRegistros(data) {
       <td>${badgeCanal(v.canalIngreso)}</td>
       <td>${esc(v.interes)}</td>
       <td>${badgeNivel(v.nivelInteres)}</td>
-      <td>${badgeTipo(v.tipoVisita)}</td>
       <td>${badgeVisito(v.id, v.visito)}</td>
       <td>${esc(v.contactadoPor || '—')}</td>
       <td>${v.notas ? `<button class="btn-nota" onclick="verNota(${v.id})" title="Ver nota">📋</button>` : '<span class="sub-text">—</span>'}</td>
@@ -245,9 +243,6 @@ function abrirEditar(id) {
   f.estatus.value       = v.estatus       || 'Pendiente';
   f.notas.value         = v.notas         || '';
   f.visito.checked      = v.visito        || false;
-  document.querySelectorAll('#form-editar [name="tipoVisita"]').forEach(r => {
-    r.checked = r.value === (v.tipoVisita || '');
-  });
   document.querySelectorAll('#form-editar [name="canalIngreso"]').forEach(r => {
     r.checked = r.value === (v.canalIngreso || '');
   });
@@ -365,12 +360,6 @@ function badgeCanal(canal) {
   };
   if (!canal || !map[canal]) return '<span class="sub-text">—</span>';
   return `<span class="badge ${map[canal]}">${esc(canal)}</span>`;
-}
-
-function badgeTipo(tipo) {
-  if (!tipo) return '<span class="sub-text">—</span>';
-  const cls = tipo === 'Prospecto de compra' ? 'badge-tipo-prospecto' : 'badge-tipo-huesped';
-  return `<span class="badge ${cls}">${esc(tipo)}</span>`;
 }
 
 function badgeNivel(nivel) {
