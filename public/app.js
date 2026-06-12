@@ -65,7 +65,7 @@ function renderDashboard(data) {
           <td>${esc(v.fechaVisita)}</td>
           <td>${esc(v.interes)}</td>
           <td>${badgeNivel(v.nivelInteres)}</td>
-          <td>${badge(v.estatus)}</td>
+          <td>${v.notas ? `<button class="btn-nota" onclick="verNota(${v.id})" title="Ver nota">📋</button>` : '<span class="sub-text">—</span>'}</td>
           <td><div class="acciones">
             <button class="btn-edit" onclick="abrirEditar(${v.id})" title="Editar">✎</button>
             <button class="btn-del"  onclick="eliminarVisita(${v.id})" title="Eliminar">✕</button>
