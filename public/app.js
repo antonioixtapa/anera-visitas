@@ -86,9 +86,27 @@ async function loadVisitas() {
 }
 
 function renderDashboard(data) {
-  document.getElementById('cnt-total').textContent      = data.filter(v => v.visito).length;
-  document.getElementById('cnt-pendiente').textContent  = data.filter(v => v.estatus === 'Pendiente').length;
-  document.getElementById('cnt-confirmada').textContent = data.length;
+  const hoy   = new Date();
+  const anio  = hoy.getFullYear();
+  const mes   = hoy.getMonth();
+  const hoyStr = hoy.toISOString().slice(0, 10);
+
+  document.getElementById('cnt-total').textContent = data.filter(v => {
+    const d = new Date(v.fechaVisita + 'T00:00:00');
+    return d.getFullYear() === anio && d.getMonth() === mes;
+  }).length;
+
+  document.getElementById('cnt-agendadas').textContent = data.filter(v =>
+    v.fechaVisita > hoyStr
+  ).length;
+
+  const fechaEl = document.getElementById('fecha-hoy');
+  if (fechaEl) {
+    const texto = hoy.toLocaleDateString('es-MX', {
+      weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    });
+    fechaEl.textContent = texto.charAt(0).toUpperCase() + texto.slice(1);
+  }
 
   const recent = [...data].reverse().slice(0, 8);
   const tbody  = document.querySelector('#tbl-recientes tbody');

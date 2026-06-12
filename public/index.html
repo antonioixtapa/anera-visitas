@@ -50,7 +50,7 @@
       <header class="page-header">
         <div>
           <h1>Dashboard</h1>
-          <p class="subtitle">Resumen de visitas al desarrollo</p>
+          <p class="subtitle" id="fecha-hoy"></p>
         </div>
         <button class="btn btn-excel" onclick="exportExcel()">
           📊 Exportar Excel
@@ -59,16 +59,12 @@
 
       <div class="cards">
         <div class="card card-total">
-          <div class="card-label">Visitaron propiedad</div>
+          <div class="card-label">Visitas este mes</div>
           <div class="card-num" id="cnt-total">—</div>
         </div>
-        <div class="card card-pendiente">
-          <div class="card-label">Pendientes</div>
-          <div class="card-num" id="cnt-pendiente">—</div>
-        </div>
         <div class="card card-confirmada">
-          <div class="card-label">Total Leads</div>
-          <div class="card-num" id="cnt-confirmada">—</div>
+          <div class="card-label">Visitas agendadas</div>
+          <div class="card-num" id="cnt-agendadas">—</div>
         </div>
       </div>
 
