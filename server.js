@@ -216,7 +216,7 @@ app.post('/api/visita', async (req, res) => {
     }
 
     const visito = req.body.visito === 'true' || req.body.visito === true;
-    const fechaRegistro = new Date().toLocaleString('es-MX', { timeZone: 'America/Mexico_City' });
+    const fechaRegistro = new Date().toLocaleString('sv-SE', { timeZone: 'America/Mexico_City' }).replace(' ', 'T');
     const { rows } = await pool.query(`
       INSERT INTO visitas
         (nombre,telefono,correo,ciudad,fechavisita,hora,interes,notas,

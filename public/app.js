@@ -115,7 +115,7 @@ function renderDashboard(data) {
         <tr>
           <td>${v.id}</td>
           <td><strong>${esc(v.nombre)}</strong></td>
-          <td>${esc(v.fechaVisita)}</td>
+          <td>${formatFecha(v.fechaVisita)}</td>
           <td>${badgeCanal(v.canalIngreso)}</td>
           <td>${esc(v.interes)}</td>
           <td>${badgeNivel(v.nivelInteres)}</td>
@@ -150,8 +150,8 @@ function renderTablaRegistros(data) {
       </td>
       <td>${esc(v.telefono)}</td>
       <td>${esc(v.ciudad || '—')}</td>
-      <td>${esc(v.fechaRegistro || '—')}</td>
-      <td>${esc(v.fechaVisita || '—')}</td>
+      <td>${formatFecha(v.fechaRegistro)}</td>
+      <td>${formatFecha(v.fechaVisita)}</td>
       <td>${badgeCanal(v.canalIngreso)}</td>
       <td>${esc(v.interes)}</td>
       <td>${badgeNivel(v.nivelInteres)}</td>
@@ -381,6 +381,20 @@ function esc(str) {
   return String(str)
     .replace(/&/g,'&amp;').replace(/</g,'&lt;')
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+function formatFecha(str) {
+  if (!str) return '—';
+  let d;
+  if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
+    d = new Date(str.length === 10 ? str + 'T00:00:00' : str);
+  } else {
+    d = new Date(str);
+  }
+  if (isNaN(d.getTime())) return str;
+  return `${d.getDate()} ${MESES[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 // ── Logout ───────────────────────────────────────────────────────────────────
