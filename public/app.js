@@ -49,10 +49,9 @@ async function loadVisitas() {
 }
 
 function renderDashboard(data) {
-  document.getElementById('cnt-total').textContent      = data.length;
+  document.getElementById('cnt-total').textContent      = data.filter(v => v.visito).length;
   document.getElementById('cnt-pendiente').textContent  = data.filter(v => v.estatus === 'Pendiente').length;
-  document.getElementById('cnt-confirmada').textContent = data.filter(v => v.estatus === 'Confirmada').length;
-  document.getElementById('cnt-realizada').textContent  = data.filter(v => v.estatus === 'Realizada').length;
+  document.getElementById('cnt-confirmada').textContent = data.length;
 
   const recent = [...data].reverse().slice(0, 8);
   const tbody  = document.querySelector('#tbl-recientes tbody');
@@ -219,7 +218,7 @@ document.getElementById('form-editar').addEventListener('submit', async e => {
 function badgeVisito(id, visito) {
   return visito
     ? `<button class="badge-visito" onclick="toggleVisito(${id}, true)" title="Clic para desmarcar">✓ Visitó</button>`
-    : `<button class="badge-visito-no" onclick="toggleVisito(${id}, false)" title="Clic para marcar">🏠</button>`;
+    : `<button class="badge-visito-no" onclick="toggleVisito(${id}, false)" title="Clic para marcar">🚫</button>`;
 }
 
 async function toggleVisito(id, actual) {
