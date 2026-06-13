@@ -99,6 +99,7 @@ function renderDashboard(data) {
   const hoyStr = hoy.toISOString().slice(0, 10);
 
   document.getElementById('cnt-total').textContent = data.filter(v => {
+    if (v.estatus !== 'Realizada') return false;
     const d = new Date(v.fechaVisita + 'T00:00:00');
     return d.getFullYear() === anio && d.getMonth() === mes;
   }).length;
@@ -115,7 +116,13 @@ function renderDashboard(data) {
     fechaEl.textContent = texto.charAt(0).toUpperCase() + texto.slice(1);
   }
 
-  const recent = [...data].reverse().slice(0, 8);
+  const recent = [...data].sort((a, b) => {
+    const fa = a.fechaVisita, fb = b.fechaVisita;
+    if (!fa && !fb) return 0;
+    if (!fa) return 1;
+    if (!fb) return -1;
+    return fa < fb ? -1 : fa > fb ? 1 : 0;
+  }).slice(0, 8);
   const tbody  = document.querySelector('#tbl-recientes tbody');
   tbody.innerHTML = recent.length
     ? recent.map(v => `
