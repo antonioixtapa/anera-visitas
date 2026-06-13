@@ -100,10 +100,9 @@ function renderDashboard(data) {
 
   document.getElementById('cnt-total').textContent = data.filter(v => {
     if (v.estatus !== 'Realizada') return false;
-    const dateStr = (v.fechaVisita || v.fechaRegistro || '').slice(0, 10);
-    if (!dateStr) return false;
-    const d = new Date(dateStr + 'T00:00:00');
-    return !isNaN(d) && d.getFullYear() === anio && d.getMonth() === mes;
+    const d = parseFechaParaMes(v.fechaVisita) || parseFechaParaMes(v.fechaRegistro);
+    if (!d) return false;
+    return d.getFullYear() === anio && d.getMonth() === mes;
   }).length;
 
   document.getElementById('cnt-agendadas').textContent = data.filter(v =>
@@ -123,7 +122,7 @@ function renderDashboard(data) {
     if (!fa && !fb) return 0;
     if (!fa) return 1;
     if (!fb) return -1;
-    return fa < fb ? -1 : fa > fb ? 1 : 0;
+    return fa < fb ? 1 : fa > fb ? -1 : 0;
   }).slice(0, 8);
   const tbody  = document.querySelector('#tbl-recientes tbody');
   tbody.innerHTML = recent.length
@@ -404,6 +403,22 @@ function esc(str) {
 }
 
 const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+function parseFechaParaMes(str) {
+  if (!str) return null;
+  // Formato ISO: YYYY-MM-DD o YYYY-MM-DDTHH:mm
+  if (/^\d{4}-\d{2}-\d{2}/.test(str)) {
+    const d = new Date(str.slice(0, 10) + 'T00:00:00');
+    return isNaN(d) ? null : d;
+  }
+  // Formato es-MX legado: D/M/YYYY, ...
+  const m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (m) {
+    const d = new Date(`${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}T00:00:00`);
+    return isNaN(d) ? null : d;
+  }
+  return null;
+}
 
 function formatFecha(str) {
   if (!str) return '—';
