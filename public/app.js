@@ -100,8 +100,10 @@ function renderDashboard(data) {
 
   document.getElementById('cnt-total').textContent = data.filter(v => {
     if (v.estatus !== 'Realizada') return false;
-    const d = new Date(v.fechaVisita + 'T00:00:00');
-    return d.getFullYear() === anio && d.getMonth() === mes;
+    const dateStr = (v.fechaVisita || v.fechaRegistro || '').slice(0, 10);
+    if (!dateStr) return false;
+    const d = new Date(dateStr + 'T00:00:00');
+    return !isNaN(d) && d.getFullYear() === anio && d.getMonth() === mes;
   }).length;
 
   document.getElementById('cnt-agendadas').textContent = data.filter(v =>
@@ -125,9 +127,9 @@ function renderDashboard(data) {
   }).slice(0, 8);
   const tbody  = document.querySelector('#tbl-recientes tbody');
   tbody.innerHTML = recent.length
-    ? recent.map(v => `
+    ? recent.map((v, idx) => `
         <tr>
-          <td>${v.id}</td>
+          <td>${idx + 1}</td>
           <td><strong>${esc(v.nombre)}</strong></td>
           <td>${formatFecha(v.fechaVisita)}</td>
           <td>${badgeCanal(v.canalIngreso)}</td>
