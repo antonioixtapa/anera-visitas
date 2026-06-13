@@ -99,10 +99,11 @@ function renderDashboard(data) {
   const hoyStr = hoy.toISOString().slice(0, 10);
 
   document.getElementById('cnt-total').textContent = data.filter(v => {
-    if (v.estatus !== 'Realizada') return false;
-    const d = parseFechaParaMes(v.fechaVisita) || parseFechaParaMes(v.fechaRegistro);
-    if (!d) return false;
-    return d.getFullYear() === anio && d.getMonth() === mes;
+    if (!v.fechaVisita) return false;
+    const fechaStr = v.fechaVisita.slice(0, 10);
+    if (fechaStr > hoyStr) return false;
+    const d = new Date(fechaStr + 'T00:00:00');
+    return !isNaN(d) && d.getFullYear() === anio && d.getMonth() === mes;
   }).length;
 
   document.getElementById('cnt-agendadas').textContent = data.filter(v =>
